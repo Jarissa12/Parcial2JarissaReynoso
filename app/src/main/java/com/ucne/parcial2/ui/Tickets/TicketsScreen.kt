@@ -1,81 +1,155 @@
 package com.ucne.parcial2.ui.Tickets
 
+import android.app.DatePickerDialog
+import android.os.Build
+import android.widget.DatePicker
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.ucne.parcial2.data.remote.dto.TicketDto
+import androidx.navigation.NavController
+import com.ucne.parcial2.ui.Navigation.ScreenModule
+import kotlinx.coroutines.launch
+import java.util.*
+
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun TicketsScreen(viewModel: ViewmodelTickets = hiltViewModel(), navController: NavController) {
+    TicketsBody(viewModel, Modifier.fillMaxWidth(), navController)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TicketsListScreen(onNewOcupacion: () -> Unit, viewModel: TicketsViewModel = hiltViewModel()) {
-    Scaffold(
-        modifier = Modifier.fillMaxWidth(),
-        topBar = {
-            TopAppBar(
-                title = { Text("Tickets", style = MaterialTheme.typography.headlineLarge) }
-            )
-        },
+private fun TicketsBody(
+    viewModel: ViewmodelTickets, modifier: Modifier, navController: NavController
+) {
 
-        floatingActionButtonPosition = FabPosition.End
-    ) {
-        val uiState by viewModel.uiState.collectAsState()
+    val scope = rememberCoroutineScope()
+    val anio: Int
+    val mes: Int
+    val dia: Int
 
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(it)) {
-            TicketsListBody(uiState.tickets)
-        }
-    }
-}
+    val mCalendar = Calendar.getInstance()
+    anio = mCalendar.get(Calendar.YEAR)
+    mes = mCalendar.get(Calendar.MONTH)
+    dia = mCalendar.get(Calendar.DAY_OF_MONTH)
 
+    val mDatePickerDialog = DatePickerDialog(
+        LocalContext.current, { _: DatePicker, anio: Int, mes: Int, dia: Int ->
+            viewModel.fecha = "$dia/${mes + 1}/$anio"
+        }, anio, mes, dia
+    )
 
-@Composable
-fun TicketsListBody(ticketsList : List<TicketDto>) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        LazyColumn {
-            items(ticketsList) {tickets ->
-                TicketsRow(tickets)
-            }
-        }
-    }
-}
+    /*----------------------------------------Code Start------------------------------------------------------*/
+    Column(modifier = Modifier.fillMaxWidth())
+    {
+        Icon(
+            imageVector = Icons.Filled.ArrowBack,
+            contentDescription = null,
+            modifier = Modifier
+                .size(30.dp, 30.dp)
+                .padding(4.dp)
+                .clickable {
+                    scope.launch {
+                        navController.navigate(ScreenModule.TicketsList.route)
+                    }
+                }
+        )
 
-@Composable
-fun TicketsRow(tickets: TicketDto) {
-    Column(
+        Spacer(modifier = Modifier.padding(20.dp))
+        Text(
+            text = "Registro de Tickets", fontSize = 27.sp,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
 
-        Modifier
-            .fillMaxWidth()
+        Spacer(modifier = Modifier.padding(10.dp))
+        OutlinedTextField(modifier = Modifier
             .padding(8.dp)
-    ) {
-        //todo : Implementar swipe to delete
+            .fillMaxWidth(),
+            value = viewModel.asunto,
+            onValueChange = { it -> viewModel.asunto = it },
+            label = { Text("Asunto") })
+
+        OutlinedTextField(
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth(),
+            value = viewModel.empresa,
+            onValueChange = { it -> viewModel.empresa = it },
+            label = { Text("Empresa") })
+
+        OutlinedTextField(modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth(),
+            value = viewModel.encargadoId,
+            onValueChange = { viewModel.encargadoId = it },
+            label = { Text("Encargado") })
+
+        OutlinedTextField(modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth(),
+            value = viewModel.estatus,
+            onValueChange = { viewModel.estatus = it },
+            label = { Text("Estatus") })
+
+        OutlinedTextField(modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth(),
+            value = viewModel.fecha,
+            onValueChange = { viewModel.fecha= it },
+            enabled = false,
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Filled.DateRange,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(33.dp)
+                        .padding(4.dp)
+                        .clickable {
+                            mDatePickerDialog.show()
+                        })
+            },
+            label = { Text(text = "Fecha") }
+        )
+
+        OutlinedTextField(modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth(),
+            value = viewModel.orden,
+            onValueChange = { viewModel.orden = it },
+            label = { Text("Orden") }
+        )
 
 
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .wrapContentSize(Alignment.BottomCenter)
         ) {
-            Text(
-                text = tickets.empresa,
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.weight(3f)
-            )
-            Text(
-                String.format("%.2f", tickets.asunto),
-                textAlign = TextAlign.End,
-                modifier = Modifier.weight(2f)
+            ExtendedFloatingActionButton(
+                modifier = Modifier
+                    .size(120.dp, 120.dp)
+                    .align(Alignment.CenterHorizontally)
+                    .wrapContentSize(Alignment.Center),
+                text = { Text("Guardar") },
+                icon = { Icon(imageVector = Icons.Filled.Save, contentDescription = "Save") },
+                onClick = {
+                    viewModel.insertar()
+                }
             )
         }
-        Divider(Modifier.fillMaxWidth())
     }
 }
