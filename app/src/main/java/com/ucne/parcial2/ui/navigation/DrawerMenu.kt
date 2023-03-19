@@ -1,4 +1,4 @@
-package com.ucne.parcial2.ui.Navigation
+package com.ucne.parcial2.ui.navigation
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Spacer
@@ -25,7 +25,7 @@ fun DrawerMenu(
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    val ic  = Icons.TwoTone.Favorite
+    //val ic  = Icons.TwoTone.Favorite
 
     val items = listOf(ScreenModule.Start, ScreenModule.Tickets, ScreenModule.TicketsList)
     val selectedItem = remember { mutableStateOf(items[0]) }
@@ -42,7 +42,10 @@ fun DrawerMenu(
                         onClick = {
                             scope.launch { drawerState.close() }
                             selectedItem.value = item
-                            navController.navigate(item.route)
+                            if(item == ScreenModule.Tickets)
+                                navController.navigate(item.route+"/0")
+                            else
+                                navController.navigate(item.route)
                         },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
@@ -59,7 +62,7 @@ fun DrawerMenu(
                 .padding(4.dp)
                 .clickable {
                     scope.launch {
-                        scope.launch { drawerState.open() }
+                        drawerState.open()
                     }
                 }
         )

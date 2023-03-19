@@ -10,11 +10,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.ucne.parcial2.ui.Navigation.DrawerMenu
-import com.ucne.parcial2.ui.Navigation.ScreenModule
+import androidx.navigation.navArgument
+import com.ucne.parcial2.ui.navigation.DrawerMenu
+import com.ucne.parcial2.ui.navigation.ScreenModule
 import com.ucne.parcial2.ui.Tickets.TicketsListScreen
 import com.ucne.parcial2.ui.Tickets.TicketsScreen
 
@@ -28,31 +30,41 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent{
+        setContent {
             Parcial2Theme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                val navController = rememberNavController()
+
+                NavHost(
+                    navController = navController,
+                    startDestination = ScreenModule.Start.route
                 ) {
-                    val navController = rememberNavController()
-                    NavHost(
-                        navController = navController,
-                        startDestination = ScreenModule.Start.route
-                    ) {
-                        composable(ScreenModule.Start.route) {
-                            DrawerMenu(navController = navController)
-                        }
-                        composable(route = ScreenModule.TicketsList.route) {
-                            TicketsListScreen(onClickList = {}, navController = navController)
-                        }
-                        composable(route = ScreenModule.Tickets.route){
-                            TicketsScreen(navController = navController)
-                        }
+
+                    /*******************HOME*********************/
+                    composable(ScreenModule.Start.route) {
+                        DrawerMenu(navController = navController)
+                    }
+
+                    /*****************CONSULTA*********************/
+                    composable(route = ScreenModule.TicketsList.route) {
+                        TicketsListScreen(onTicketClick = { ticketId ->
+                            navController.navigate(ScreenModule.Tickets.route+ "/$ticketId")
+                        }, navController = navController)
+                    }
+
+                    /*****************REGISTRO*********************/
+                    composable(route = ScreenModule.Tickets.route + "/{id}",
+                        arguments = listOf(
+                            navArgument("id"){type = NavType.IntType}
+                        )
+                    ){ entrada ->
+                        val id = entrada.arguments?.getInt("id") ?: 0
+                        TicketsScreen(ticketId = id, navController = navController)
                     }
                 }
             }
         }
     }
 }
+
+
 

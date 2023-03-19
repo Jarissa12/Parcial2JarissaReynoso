@@ -1,4 +1,4 @@
-package com.ucne.parcial2.ui.Navigation
+package com.ucne.parcial2.ui.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.ConfirmationNumber

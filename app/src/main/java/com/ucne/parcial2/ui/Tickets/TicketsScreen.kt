@@ -11,23 +11,33 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.ucne.parcial2.ui.Navigation.ScreenModule
+import com.ucne.parcial2.ui.navigation.ScreenModule
+import com.ucne.parcial2.util.opcionesDeEstatus
 import kotlinx.coroutines.launch
 import java.util.*
 
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun TicketsScreen(viewModel: ViewmodelTickets = hiltViewModel(), navController: NavController) {
+fun TicketsScreen(
+    ticketId: Int = 0,
+    viewModel: ViewmodelTickets = hiltViewModel(),
+    navController: NavController
+) {
+    remember {
+        viewModel.findTicket(ticketId)
+        0
+    }
+
     TicketsBody(viewModel, Modifier.fillMaxWidth(), navController)
 }
 
@@ -49,7 +59,7 @@ private fun TicketsBody(
 
     val mDatePickerDialog = DatePickerDialog(
         LocalContext.current, { _: DatePicker, anio: Int, mes: Int, dia: Int ->
-            viewModel.fecha = "$dia/${mes + 1}/$anio"
+            //viewModel.fecha = "$dia/${mes + 1}/$anio"
         }, anio, mes, dia
     )
 
@@ -64,7 +74,7 @@ private fun TicketsBody(
                 .padding(4.dp)
                 .clickable {
                     scope.launch {
-                        navController.navigate(ScreenModule.TicketsList.route)
+                        navController.navigateUp()
                     }
                 }
         )
@@ -76,6 +86,8 @@ private fun TicketsBody(
         )
 
         Spacer(modifier = Modifier.padding(10.dp))
+
+        /*ASUNTO*/
         OutlinedTextField(modifier = Modifier
             .padding(8.dp)
             .fillMaxWidth(),
@@ -83,6 +95,7 @@ private fun TicketsBody(
             onValueChange = { it -> viewModel.asunto = it },
             label = { Text("Asunto") })
 
+        /*EMPRESA*/
         OutlinedTextField(
             modifier = Modifier
                 .padding(8.dp)
@@ -91,21 +104,38 @@ private fun TicketsBody(
             onValueChange = { it -> viewModel.empresa = it },
             label = { Text("Empresa") })
 
-        OutlinedTextField(modifier = Modifier
-            .padding(8.dp)
-            .fillMaxWidth(),
-            value = viewModel.encargadoId,
-            onValueChange = { viewModel.encargadoId = it },
-            label = { Text("Encargado") })
+        /*ESTATUS*/
+        var comboBoxExpanded by remember { mutableStateOf(false) }
 
         OutlinedTextField(modifier = Modifier
             .padding(8.dp)
+            .clickable { comboBoxExpanded = !comboBoxExpanded }
             .fillMaxWidth(),
+            enabled = false, readOnly = true,
             value = viewModel.estatus,
             onValueChange = { viewModel.estatus = it },
-            label = { Text("Estatus") })
+            label = { Text("Estatus") }
+        )
+        DropdownMenu(
+            expanded = comboBoxExpanded,
+            onDismissRequest = { comboBoxExpanded = false },
+            modifier = Modifier.fillMaxWidth().padding(8.dp)
+        ) {
+            opcionesDeEstatus.forEach{ estatus ->
+                DropdownMenuItem(
+                    text = {
+                        Text(estatus, textAlign = TextAlign.Center)
+                    },
+                    onClick={
+                        comboBoxExpanded = false
+                        viewModel.estatus = estatus
+                    },
+                    modifier = Modifier.fillMaxWidth().padding(8.dp)
+                )
+            }
+        }
 
-        OutlinedTextField(modifier = Modifier
+        /*OutlinedTextField(modifier = Modifier
             .padding(8.dp)
             .fillMaxWidth(),
             value = viewModel.fecha,
@@ -123,14 +153,14 @@ private fun TicketsBody(
                         })
             },
             label = { Text(text = "Fecha") }
-        )
-
+        )*/
+        /*ESPECIFICACIONES*/
         OutlinedTextField(modifier = Modifier
             .padding(8.dp)
             .fillMaxWidth(),
-            value = viewModel.orden,
-            onValueChange = { viewModel.orden = it },
-            label = { Text("Orden") }
+            value = viewModel.especificaciones,
+            onValueChange = { viewModel.especificaciones = it },
+            label = { Text("Especificaciones") }
         )
 
 
@@ -141,13 +171,13 @@ private fun TicketsBody(
         ) {
             ExtendedFloatingActionButton(
                 modifier = Modifier
-                    .size(120.dp, 120.dp)
                     .align(Alignment.CenterHorizontally)
                     .wrapContentSize(Alignment.Center),
                 text = { Text("Guardar") },
                 icon = { Icon(imageVector = Icons.Filled.Save, contentDescription = "Save") },
                 onClick = {
-                    viewModel.insertar()
+                    viewModel.putTicket()
+                    navController.navigate(ScreenModule.TicketsList.route)
                 }
             )
         }

@@ -18,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -25,57 +26,80 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ucne.parcial2.data.remote.dto.TicketDto
-import com.ucne.parcial2.ui.Navigation.ScreenModule
+import com.ucne.parcial2.ui.navigation.ScreenModule
 import kotlinx.coroutines.launch
+
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TicketsListScreen(onClickList: (Int) -> Unit, viewModel: ViewmodelTickets = hiltViewModel(), navController: NavController) {
+fun TicketsListScreen(
+    onTicketClick: (Int) -> Unit,
+    viewModel: ViewmodelTickets = hiltViewModel(),
+    navController: NavController
+) {
     val scope = rememberCoroutineScope()
     Column(Modifier.fillMaxSize()) {
-        Spacer(Modifier.height(50.dp))
-        Icon(
-            imageVector = Icons.Filled.ArrowBack,
-            contentDescription = null,
-            modifier = Modifier
-                .size(30.dp, 30.dp)
-                .padding(4.dp)
-                .wrapContentSize(Alignment.TopStart)
-                .clickable {
-                    scope.launch {
-                        navController.navigate(ScreenModule.Tickets.route)
-                    }
-                }
-        )
+
         Scaffold(
+            topBar = {
+                Row(
+                    modifier = Modifier
+                        .height(50.dp)
+                        .fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(30.dp, 30.dp)
+                            .padding(4.dp)
+                            .weight(5f)
+                            .wrapContentSize(Alignment.TopStart)
+                            .clickable {
+                                scope.launch {
+                                    navController.navigate(ScreenModule.Start.route)
+                                }
+                            }
+                    )
+                    Text(
+                        "Lista de Tickets", modifier = Modifier
+                            .weight(6f)
+                    )
+                }
+            },
             floatingActionButton = {
                 FloatingActionButton(
-                    onClick = {  }
+                    onClick = {  /*navController.navigate(ScreenModule.Tickets.route)*/ }
                 ) {
                     Icon(imageVector = Icons.Filled.Add, contentDescription = "Save")
                 }
             },
             floatingActionButtonPosition = FabPosition.End
         ) {
-            val uiState by viewModel.uiState.collectAsState()
+            val uiState by viewModel.listUiState.collectAsState()
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(it)
             ) {
-//                TicketListBody(uiState.)
+                TicketListBody(uiState.tickets) { ticketId ->
+                    onTicketClick(ticketId)
+                }
             }
         }
     }
 }
 
 @Composable
-fun TicketListBody(tickets: List<TicketDto>) {
+fun TicketListBody(tickets: List<TicketDto>, onTicketClick: (Int) -> Unit) {
     Column(modifier = Modifier.fillMaxWidth()) {
         LazyColumn {
-            items(tickets) {ticket ->
-                TicketRow(ticket)
+            items(tickets) { ticket ->
+                TicketRow(ticket) { ticketId ->
+                    onTicketClick(ticketId)
+                }
             }
         }
     }
@@ -83,13 +107,20 @@ fun TicketListBody(tickets: List<TicketDto>) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TicketRow(ticket: TicketDto) {
-
+fun TicketRow(ticket: TicketDto, onTicketClick: (Int) -> Unit) {
     Column(modifier = Modifier
-        .fillMaxWidth()) {
+        .fillMaxWidth()
+
+        .clickable(
+            //Que llame la funcion "OnTicketClick" con el Id del Ticket al darle click al column
+            onClick = { onTicketClick(ticket.ticketId) }
+        )
+
+    ) {
         Spacer(modifier = Modifier.padding(10.dp))
-        Row(modifier = Modifier
-            .fillMaxWidth()
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
         ) {
             Spacer(modifier = Modifier.padding(10.dp))
             Box(
@@ -98,26 +129,24 @@ fun TicketRow(ticket: TicketDto) {
                     .wrapContentSize(Alignment.CenterStart)
             ) {
                 Text(
-                    text = ticket.empresa.foldIndexed("") { index, acc, c ->
-                        if (index % 20 == 0 && index > 0) "$acc\n$c" else "$acc$c"
-                    },
-                    fontSize = 35.sp,
+                    text = ticket.empresa,
                     fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleLarge
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
             Box(
                 modifier = Modifier
-                    .weight(0.5f)
+                    .weight(0.95f)
                     .wrapContentSize(Alignment.Center)
             ) {
                 OutlinedTextField(
                     modifier = Modifier
-                        .size(300.dp, 50.dp)
+                        .size(500.dp, 50.dp)
                         .border(2.dp, Color.Gray, shape = RoundedCornerShape(20.dp)),
                     shape = RoundedCornerShape(20.dp),
                     value = ticket.fecha,
-                    onValueChange = { ticket.fecha = it},
+                    onValueChange = { ticket.fecha = it },
                     enabled = false
                 )
             }
@@ -148,7 +177,9 @@ fun TicketRow(ticket: TicketDto) {
                     modifier = Modifier
                         .size(33.dp)
                         .padding(4.dp)
-                        .clickable { }
+                        .clickable {
+                            /* HACER FUNCION DELETE (POR ID EN VIEWMODEL) Y LLAMARLA AQUI*/
+                        }
                 )
             }
             Spacer(modifier = Modifier.padding(10.dp))
@@ -162,11 +193,18 @@ fun TicketRow(ticket: TicketDto) {
                     modifier = Modifier
                         .size(33.dp)
                         .padding(4.dp)
-                        .clickable { }
+                        .clickable {
+                            /* hacer funcion para modificar el estatus (Suspender) y llamarla aqui */
+                        }
                 )
             }
         }
         Spacer(modifier = Modifier.padding(10.dp))
-        Divider(Modifier.fillMaxWidth().size(15.dp))
+        Divider(
+            Modifier
+                .fillMaxWidth()
+                .size(8.dp)
+                .clip(shape = RoundedCornerShape(16.dp))
+        )
     }
 }

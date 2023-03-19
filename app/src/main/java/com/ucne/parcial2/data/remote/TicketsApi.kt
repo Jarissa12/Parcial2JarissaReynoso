@@ -11,6 +11,9 @@ interface TicketsApi{
     @GET("/api/Tickets")
     suspend fun getTickets():List<TicketDto>
 
+    @GET("/api/Tickets/{id}")
+    suspend fun getTicketById(@Path("id") id:Int) : TicketDto
+
     @PUT("/api/tickets/{id}")
     suspend fun putTickets(@Path("id") id: Int, @Body TicketDto : TicketDto ) : Response<Unit>
 
@@ -19,5 +22,4 @@ interface TicketsApi{
 
     @DELETE("/api/Tickets/{id}")
     suspend fun deleteTickets(@Path("id") id: Int)
-
 }
