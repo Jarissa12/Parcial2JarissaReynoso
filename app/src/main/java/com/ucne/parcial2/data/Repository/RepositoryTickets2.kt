@@ -21,7 +21,7 @@ class RepositoryTickets2  @Inject constructor(
 
 
     }
-    suspend fun delete(tickets: EntityTickets) = ticketsDao.delete(tickets)
+    suspend fun deleteTickets(tickets: EntityTickets) = ticketsDao.delete(tickets)
 
     suspend fun find(ticketId:Int) = ticketsDao.find(ticketId)
     suspend fun putTickets(id: Int, ticketDto: TicketDto) = ticketsApi.putTickets(id,ticketDto)

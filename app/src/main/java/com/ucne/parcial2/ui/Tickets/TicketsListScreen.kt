@@ -24,6 +24,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ucne.parcial2.data.remote.dto.TicketDto
 import com.ucne.parcial2.ui.navigation.ScreenModule
@@ -63,9 +65,7 @@ fun TicketsListScreen(
                                 }
                             }
                     )
-                    Text(
-                        "Lista de Tickets", modifier = Modifier
-                            .weight(6f)
+                    Text( "Lista de Tickets", modifier = Modifier.weight(6f)
                     )
                 }
             },
@@ -107,7 +107,7 @@ fun TicketListBody(tickets: List<TicketDto>, onTicketClick: (Int) -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TicketRow(ticket: TicketDto, onTicketClick: (Int) -> Unit) {
+fun TicketRow(ticket: TicketDto, onTicketClick: (Int) -> Unit ) {
     Column(modifier = Modifier
         .fillMaxWidth()
 
@@ -141,10 +141,7 @@ fun TicketRow(ticket: TicketDto, onTicketClick: (Int) -> Unit) {
                     .wrapContentSize(Alignment.Center)
             ) {
                 OutlinedTextField(
-                    modifier = Modifier
-                        .size(500.dp, 50.dp)
-                        .border(2.dp, Color.Gray, shape = RoundedCornerShape(20.dp)),
-                    shape = RoundedCornerShape(20.dp),
+                    modifier = Modifier.size(500.dp, 56.dp),
                     value = ticket.fecha,
                     onValueChange = { ticket.fecha = it },
                     enabled = false
@@ -178,6 +175,8 @@ fun TicketRow(ticket: TicketDto, onTicketClick: (Int) -> Unit) {
                         .size(33.dp)
                         .padding(4.dp)
                         .clickable {
+
+                            onClick = {viewModel.deletetickets(ticket.ticketId) }
                             /* HACER FUNCION DELETE (POR ID EN VIEWMODEL) Y LLAMARLA AQUI*/
                         }
                 )
@@ -203,7 +202,7 @@ fun TicketRow(ticket: TicketDto, onTicketClick: (Int) -> Unit) {
         Divider(
             Modifier
                 .fillMaxWidth()
-                .size(8.dp)
+                .size(2.dp)
                 .clip(shape = RoundedCornerShape(16.dp))
         )
     }

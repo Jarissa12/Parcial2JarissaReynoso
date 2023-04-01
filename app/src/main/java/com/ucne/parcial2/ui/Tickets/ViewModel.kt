@@ -37,7 +37,6 @@ class ViewmodelTickets @Inject constructor(
 ) : ViewModel() {
 
     var ticketId by mutableStateOf(0)
-
     var asunto by mutableStateOf("")
     var empresa by mutableStateOf("")
     var especificaciones by mutableStateOf("")
@@ -74,21 +73,21 @@ class ViewmodelTickets @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    /*fun insertar() {
-
-        val ticket = EntityTickets(
-            asunto = asunto,
-            empresa = empresa,
-            //encargadoId = encargadoId.toIntOrNull() ?: 0,
-            especificaciones = especificaciones,
-            estatus = estatus
-            //fecha = fecha,
-            //orden = orden.toIntOrNull() ?: 0
-        )
-
-        viewModelScope.launch(Dispatchers.IO) {
+    fun deleteTickets(id: Int) {
+        viewModelScope.launch {
+            ticketId = id!!
+            try {
+                if (ticketId != null) {
+                    ticketRepos.deleteTickets(ticketId)
+                } else {
+                    throw NullPointerException("Value is null")
+                }
+            } catch (e: NullPointerException) {
+                e.printStackTrace()
+            }
         }
-    }*/
+    }
+
 
     fun findTicket(id: Int) {
         ticketId = id
