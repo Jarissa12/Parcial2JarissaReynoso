@@ -149,7 +149,9 @@ fun TicketRow(ticket: TicketDto, onTicketClick: (Int) -> Unit ) {
             }
         }
 
-        Row(modifier = Modifier.fillMaxWidth()) {
+        Row( modifier = Modifier.fillMaxWidth()) {
+
+            val viewModel: ViewmodelTickets  = hiltViewModel()
             Spacer(modifier = Modifier.padding(10.dp))
             Box(
                 modifier = Modifier
@@ -175,8 +177,7 @@ fun TicketRow(ticket: TicketDto, onTicketClick: (Int) -> Unit ) {
                         .size(33.dp)
                         .padding(4.dp)
                         .clickable {
-
-                            onClick = {viewModel.deletetickets(ticket.ticketId) }
+                            viewModel.deleteTickets(ticket.ticketId)
                             /* HACER FUNCION DELETE (POR ID EN VIEWMODEL) Y LLAMARLA AQUI*/
                         }
                 )
